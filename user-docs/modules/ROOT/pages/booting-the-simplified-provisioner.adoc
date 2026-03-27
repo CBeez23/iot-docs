@@ -4,10 +4,9 @@ include::_attributes.adoc[]
 
 == Boot from the Simplified Provisioner ISO
 
-* If you are using physical devices with a CD-ROM unit:
-** Burn the downloaded Simplified Provisioner ISO to a CD-ROM
-** Use the CD-ROM to boot the IoT device from it.
-* If you are using Virtual Machines, you can use the `virt-install`
+1. If you are using physical devices with a CD-ROM unit:
+* Burn the downloaded Simplified Provisioner ISO to a CD-ROM and insert into the unit to run the IoT device reboot program.
+2. If you are using Virtual Machines, you can use the `virt-install`
 command to boot from the Simplified Provisioner ISO.
 +
 [subs="attributes"]
@@ -23,14 +22,17 @@ command to boot from the Simplified Provisioner ISO.
 ....
 
 == Boot the Simplified Provisioner from an USB Flash Drive
+=== Prerequisites
+* USB flash drive with available storage space ≥ 8 GB.
 
-* Copy the ISO image file to a USB flash drive (You will need a 8 GB USB flash drive at least)
-* Connect the USB flash drive to the port of the computer you want to boot.
-* Boot the device from the USB flash drive.
+=== Steps
+1. Copy the ISO image file to a USB flash drive.
+2. Connect the USB flash drive to the port of the computer you want to boot.
+3. Boot the device from the USB flash drive.
 
 == Boot the Simplified Provisioner from UEFI HTTP Boot
 
-* Copy the contents of the Simplified Provisioner ISO to a directory
+1. Copy the contents of the Simplified Provisioner ISO to a directory
 +
 [subs="attributes"]
 ....
@@ -38,7 +40,7 @@ mount {FedoraSimplifiedProvisionerISO} /mnt
 cp -r /mnt Fedora-{FedoraVersion}-IoT-Simplified-Provisioner
 cd Fedora-{FedoraVersion}-IoT-Simplified-Provisioner
 ....
-* Modify the `grub.cfg` file in `EFI/BOOT` directory and replace all the
+2. Modify the `grub.cfg` file in `EFI/BOOT` directory and replace all the
 instances of `linux` and `initrd` with `linuxefi` and `initrdefi` respectively.
 +
 [subs="attributes"]
@@ -47,7 +49,7 @@ sed -i -e 's|linux /|linuxefi /|' \
        -e 's|initrd /|initrdefi /|' \
        EFI/BOOT/grub.cfg
 ....
-* Use an HTTP Server to serve the contents over the network, e.g.:
+3. Use an HTTP Server to serve the contents over the network, e.g.:
 +
 [subs="attributes"]
 ....
@@ -55,7 +57,7 @@ python3 -m http.server {UEFIHTTPBootServerPort}
 firewall-cmd --add-port={UEFIHTTPBootServerPort}/tcp
 ....
 
-* The correct URL to perform UEFI HTTPBoot depends on the ISO architecture (`x86_64` or `aarch64`)
+4. The correct URL to perform UEFI HTTPBoot depends on the ISO architecture (`x86_64` or `aarch64`)
 ** For `x86_64` hardware the corresponding HTTP URL of
 `EFI/BOOT/BOOTX86.EFI` file will be used to boot (e.g. `http://{UEFIHTTPBootServerIP}:{UEFIHTTPBootServerPort}/EFI/BOOT/BOOTX86.EFI`)
 ** For `aarch64` hardware the corresponding HTTP URL of
@@ -69,7 +71,7 @@ to boot it manually or in an automated way from the boot URL (see above)
 
 === Booting Virtual Machines
 
-* Use the `virt-install` command (or any other tool that supports booting UEFI VMs) to boot a VM. E.g.:
+1. Use the `virt-install` command (or any other tool that supports booting UEFI VMs) to boot a VM. E.g.:
 +
 [subs="attributes"]
 ....
@@ -83,17 +85,17 @@ virt-install --connect qemu:///system \
              --import
 ....
 
-* Press *"[Esc]"* key repeately to enter the UEFI management interface
-* Select *"Device Manager"* and press *"[Enter]"*
-* Select *"Network Device List"* and press *"[Enter]"*
-* Select the MAC address corresponding to the interface you wan to use to perform UEFI HTTPBoot and press *"[Enter]"*
-* Select *"HTTP Boot Configuration"* and press *"[Enter]"*
-* Select *"Boot URI"* and press *"[Enter]"*
-* Enter the HTTPBoot URL (see above) (e.g.: *http://{UEFIHTTPBootServerIP}:{UEFIHTTPBootServerPort}/EFI/BOOT/BOOTX86.EFI*) and press *"[Enter]"*
-* Press *"[F10]"* key to save the changes and then press *"[Y]"* to confirm the action
-* Press *"[Esc]"* four times until you return to the main screen
-* Select *"Boot Manager"*
-* Select *"UEFI HTTP"* and press *"[Enter]"*
+2. Press *"[Esc]"* key repeately to enter the UEFI management interface
+3. Select *"Device Manager"* and press *"[Enter]"*
+4. Select *"Network Device List"* and press *"[Enter]"*
+5. Select the MAC address corresponding to the interface you wan to use to perform UEFI HTTPBoot and press *"[Enter]"*
+6. Select *"HTTP Boot Configuration"* and press *"[Enter]"*
+7. Select *"Boot URI"* and press *"[Enter]"*
+8. Enter the HTTPBoot URL (see above) (e.g.: *http://{UEFIHTTPBootServerIP}:{UEFIHTTPBootServerPort}/EFI/BOOT/BOOTX86.EFI*) and press *"[Enter]"*
+9. Press *"[F10]"* key to save the changes and then press *"[Y]"* to confirm the action
+10. Press *"[Esc]"* four times until you return to the main screen
+11. Select *"Boot Manager"*
+12. Select *"UEFI HTTP"* and press *"[Enter]"*
 * The VM should perform the UEFI HTTPBoot.
 
 It's also possible to perform the same steps in an automated way by modifying the UEFI vars after creating the virtual
@@ -103,7 +105,7 @@ machine. For that we will need to install the `qemu-img` and `python3-virt-firmw
 dnf install -y python3-virt-firmware qemu-img
 ....
 
-* Create an unitialized and stopped virtual machine (make sure it supports UEFI), e.g.:
+1. Create an unitialized and stopped virtual machine (make sure it supports UEFI), e.g.:
 +
 [subs="attributes"]
 ....
@@ -116,31 +118,31 @@ virt-install --connect qemu:///system \
              --disk pool=default,size=30 \
              --import --noautoconsole --noreboot
 ....
-* Connect the QCOW2 containing the VM's UEFI variables to an NBD disk so we can modify them inplace:
+2. Connect the QCOW2 containing the VM's UEFI variables to an NBD disk so we can modify them inplace:
 +
 [subs="attributes"]
 ....
 modprobe nbd
 qemu-nbd --connect /dev/nbd0 /var/lib/libvirt/qemu/nvram/{VMName}_VARS.qcow2
 ....
-* Use the `virt-fw-vars` tool to modify the UEFI variables and configure the VM to boot from the HTTP URL, e.g.:
+3. Use the `virt-fw-vars` tool to modify the UEFI variables and configure the VM to boot from the HTTP URL, e.g.:
 +
 [subs="attributes"]
 ....
 virt-fw-vars --input /dev/nbd0 --set-boot-uri http://{UEFIHTTPBootServerIP}:{UEFIHTTPBootServerPort}/EFI/BOOT/BOOTX64.EFI
 ....
-* Disconnect the NBD device:
+4. Disconnect the NBD device:
 +
 [subs="attributes"]
 ....
 qemu-nbd --disconnect /dev/nbd0
 ....
-* Start the VM:
+5. Start the VM:
 +
 [subs="attributes"]
 ....
 virsh --connect qemu:///system \
       start {VMName}
 ....
-* The VM should perform an UEFI HTTPBoot from the configured URL
+6. The VM should perform an UEFI HTTPBoot from the configured URL
 
