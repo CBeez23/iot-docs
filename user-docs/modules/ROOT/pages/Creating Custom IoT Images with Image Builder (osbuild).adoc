@@ -1,0 +1,67 @@
+Image Builder automates the creation of customized system images by pulling pre-configured setup details such as packages and settings as defined in the selected blueprint.
+
+
+
+== Creating and Configuring a Blueprint
+First create a .toml file using a text editor such as vim by running:
+ $ vim fedora-43-base.toml
+Define the image specifications in the .toml file. 
+The essential metadata fields are:                                           - name - description - version (use * to avoid restriction to one version). 
+The packages for iot are 
+
+
+[IMPORTANT]
+====
+All values for these fields must be encased in quotation marks.
+====
+
+[TIP] 
+====
+All interactions with the service henceforth are managed via the composer-cli tool and generally use, at minimum, the following syntax: $ composer-cli [command] [argument].                         
+
+Most commands start with the client name (`$ composer-cli`), followed by the **action** you want to take (like `blueprints list`, a command and subcommand respectively) and the **specific file or name** you are working with.
+====
+
+== Registering and Verifying Blueprints
+
+Run Blueprints Push on your desired blueprint.toml to upload it to the server and make it available to the builder.
+
+Example: $ composer-cli blueprints push blueprint.toml.
+ 
+The file is now stored as a registered blueprint.
+[NOTE]:
+====
+To ensure your blueprint is ready for a build, you can use these three verification commands:
+ 
+1. **List:** `$ composer-cli blueprints list` — Confirms the server has received the file and registered the name. 
+2. **Show:** `$ composer-cli blueprints show [name]` — Displays the actual contents (packages and version) currently stored on the server. 
+3. **Depsolve:** `$ composer-cli blueprints depsolve [name]` — Performs a "sanity check" to ensure all requested packages named by the blueprint and their dependencies exist  in the current repositories.
+====
+
+== Build an Image
+Once your blueprint is registered and the dependencies are verified, you must identify your output format and start the build.
+First, review and select a supported output format (target) by running the compose types command.
+The server will reply with a list of the targets it supports.
+Initiate the build with the compose start command followed by the blueprint name and the desired image type (such as iot-commit or qcow2).
+Example: $ composer-cli compose start [blueprint-name] [image-type]
+[NOTE:]
+====
+iot-raw-image is used for initial installation on physical hardware via a bootable SD card or USB. 
+iot-commit is for system updates pulled from existing, Greenboot-enabled IoT devices from an OSTree repository.
+qcow2 is used for validating the blueprint in a virtual environment (such as QEMU/KVM) to ensure the configuration boots and functions as expected before final deployment.
+ami/vhd/gcp: For direct deployment to cloud infrastructure (AWS, Azure, or Google Cloud).
+Older versions of this tool may preface the target name with fedora- (e.g., fedora-iot-commit).
+====
+[TIP]
+====
+ While triggering the image build, you can use a parameter (starting with `--`) to define extra settings such as the physical size of your image if the default is not sufficient (for example, --size 10240 for a 10GB image).
+=====
+== Monitoring and Retrieving Results
+Once the build is initiated, the service manages the image creation in the background.
+Tracking build progress                                                                                                         The compose start command will output a newly generated Universally Unique Identifier (UUID) on the first line that can be used to track the status of the image building process. 
+To return detailed progress status, run the compose info command followed by the UUID. 
+For a quick list of all running, finished, and failed builds in the service queue, run the command compose status. 
+Retrieving the Image
+Once the compose has reached ‘Finished’ status, run the compose results command followed by the UUID to download the completed image, contained within a zipped .tar file from the server along with the osbuild manifest and build logs.
+
+Run $ tar xf [UUID].tar to extract the contents of the .tar file.
